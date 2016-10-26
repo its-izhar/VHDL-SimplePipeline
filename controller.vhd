@@ -98,11 +98,11 @@ begin
                 
             when S_WAIT_UNTIL_DONE =>
                 if(ip_addr_gen_done = '1' and op_addr_gen_done = '1') then          -- Wait until both address generators are done
+					done <= '1';
                     state <= S_DONE;
                 end if;
                 
             when S_DONE =>
-                done <= '1';
                 if (go = '0') then
                     state <= S_WAIT_GO;
                 end if;
@@ -112,5 +112,5 @@ begin
         
         end case;
     end if;
-  end process;
+  end process; 
 end default;

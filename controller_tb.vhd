@@ -68,7 +68,7 @@ architecture default of controller_tb is
 	signal go    	: std_logic;
 	signal done  	: std_logic	:= '0';
 
-	signal size	: std_logic_vector(C_MEM_ADDR_WIDTH downto 0);  
+	signal size	: std_logic_vector(C_MEM_ADDR_WIDTH downto 0) := (others => '0');  
 	signal clkEn : std_logic := '1';
     
 begin
@@ -104,29 +104,48 @@ begin
   process    
   begin
 
+		-- reset the controller
 		rst <= '1';
+		go <= '0';
+		
+		-- Wait for some clk cycles
+		for i in 0 to 2 loop
+			wait until rising_edge(clk);
+		end loop;
+		
+		rst <= '0';
+		
+		-- Set Size
+		size <= std_logic_vector(to_unsigned( TEST_SIZE, C_MEM_ADDR_WIDTH+1 ));
+		
+		-- start the operation
+		go <= '1';
+		wait until rising_edge(clk);
+		go <= '0';
+		
+		-- wait for random amount of time
+		-- assume that address generator is working during this time
+		for i in 0 to 10 loop
+			wait until rising_edge(clk);
+		end loop;				
+		
+		-- address generators finished
+		-- assuming that both address generators finish at different time instants..
+		ip_addr_gen_done <= '1';
+		for i in 0 to 2 loop
+		wait until rising_edge(clk);
+		end loop;		
+		op_addr_gen_done <= '1';
 		
 		for i in 0 to 2 loop
 		wait until rising_edge(clk);
 		end loop;
 		
-		go <= '1';
-		wait until rising_edge(clk);
-		go <= '0';
+		if(done = '1') then
+			report "Success!";
+		end if;
 		
-		for i in 0 to 10 loop
-		wait until rising_edge(clk);
-		end loop;				
-		
-		ip_addr_gen_done <= '1';
-		for i in 0 to 2 loop
-		wait until rising_edge(clk);
-		end loop;		
-		ip_addr_gen_done <= '1';
-		
-		wait until rising_edge(clk);
-		wait until rising_edge(clk);
-		
+		-- Disable clock
 		clkEn <= '0';
 		
 		wait;
