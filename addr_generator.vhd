@@ -51,7 +51,6 @@ architecture default of addr_generator is
     constant C_START_ADDR  : unsigned(C_MEM_ADDR_WIDTH downto 0) := to_unsigned(0, C_MEM_ADDR_WIDTH+1);
     constant C_END_ADDR  : unsigned(C_MEM_ADDR_WIDTH downto 0) := to_unsigned(2**ADDR_WIDTH-1, C_MEM_ADDR_WIDTH+1);    
     
-    signal regMode : std_logic := '0';
     signal regDelay : std_logic := '0';
     signal regSize  : std_logic_vector(C_MEM_ADDR_WIDTH downto 0) := (others => '0');
     
@@ -78,7 +77,6 @@ begin
                 
             when S_INIT =>
                 count := C_START_ADDR;
-                regMode <= mode;
                 regSize <= size;     
                 wr_en <= '0';
                 wr_addr <= (others => '0');
@@ -89,9 +87,9 @@ begin
                 state <= S_MODE_CHECK;  -- Go to check the mode
                 
             when S_MODE_CHECK =>
-                if(regMode = C_READ_MODE) then          -- Read Mode
+                if(mode = C_READ_MODE) then          -- Read Mode
                     state <= S_RD_COUNT_CHECK;
-                elsif (regMode = C_WRITE_MODE) then     -- Write Mode
+                elsif (mode = C_WRITE_MODE) then     -- Write Mode
                     state <= S_WR_COUNT_CHECK;
                 end if;
                 
@@ -109,7 +107,8 @@ begin
                 end if;      
             
             when S_WR_COUNT_CHECK =>    -- WRITE Mode Starts here ...
-                if(valid_in = '1') then
+                wr_en <= '0';
+				if(valid_in = '1') then
                     wr_addr <= std_logic_vector(count(ADDR_WIDTH-1 downto 0));
                     wr_en <= '1';
                     count := count + 1;
