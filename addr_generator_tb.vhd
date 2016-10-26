@@ -33,7 +33,7 @@ architecture TB of addr_generator_tb is
 
 	-- Valid Data I/O
 	signal valid_in   : std_logic;
-	signal valid_out  : std_logic;
+	signal valid_out_ag  : std_logic;
 
 	signal start   	: std_logic := '0';
 	signal read_done  	: std_logic	:= '0';
@@ -52,28 +52,29 @@ begin
 			mode => C_READ_MODE,
 			size => size,
 			rd_addr => rd_addr,
-			valid_in => 'X',
-			valid_out => valid_out,
+			valid_in => valid_in,
+			valid_out => valid_out_ag,
        
 			-- Control I/O
 			start => start,
 			done => read_done );
 
---	UUT_AG_WRITE : entity work.addr_generator(default)
---		generic map ( ADDR_WIDTH => ADDR_WIDTH )
---		port map (
---			clk	=> clk,
---			rst => rst,
---			
---			mode => C_WRITE_MODE,
---			size => size,
---			wr_en => wr_en,
---			wr_addr => wr_addr,
---			valid_in => valid_in,
---       
---			-- Control I/O
---			start => start,
---			done => write_done );
+	UUT_AG_WRITE : entity work.addr_generator(default)
+		generic map ( ADDR_WIDTH => ADDR_WIDTH )
+		port map (
+			clk	=> clk,
+			rst => rst,
+			
+			mode => C_WRITE_MODE,
+			size => size,
+			wr_en => wr_en,
+			wr_addr => wr_addr,
+			valid_in => valid_out_ag,
+			--valid_out => 'X',			
+       
+			-- Control I/O
+			start => start,
+			done => write_done );
 			
 	clk <= not clk and clkEn after 10 ns;
 
@@ -104,9 +105,9 @@ begin
 		end loop;
 		
 		-- wait until done
-		wait until (read_done = '1');
+		wait until (read_done = '1' and write_done = '1');
 
-        if (read_done /= '1') then
+        if (read_done /= '1' or write_done /= '1') then
             report "Done signal not asserted before timeout.";
 		else
 			report "Success!";

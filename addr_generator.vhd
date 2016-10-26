@@ -94,6 +94,7 @@ begin
                 end if;
                 
             when S_RD_COUNT_CHECK =>     -- READ Mode Starts here ...
+				regDelay <= '0';
                 if(count < unsigned(regSize)) then
                     rd_addr <= std_logic_vector(count(ADDR_WIDTH-1 downto 0));
                     regDelay <= '1';
@@ -120,6 +121,7 @@ begin
                 end if;                
                 
             when S_DONE =>
+				wr_en <= '0';
 				regDelay <= '0';
 				valid_out <= '0';
                 done <= '1';
