@@ -161,14 +161,14 @@ begin
 		
 		-- write data
 		wdata <= std_logic_vector(to_unsigned( 786, C_MEM_IN_WIDTH ));
-		waddr <= std_logic_vector(to_unsigned( 0, ADDR_WIDTH ));
+		waddr <= std_logic_vector(to_unsigned( 32766, ADDR_WIDTH ));
 		wen <= '1';
 		wait until rising_edge(clk);
 		wen <= '0';
 
 		wait until rising_edge(clk);
 		wdata <= std_logic_vector(to_unsigned( 5238, C_MEM_IN_WIDTH ));
-		waddr <= std_logic_vector(to_unsigned( 3, ADDR_WIDTH ));
+		waddr <= std_logic_vector(to_unsigned( 32767, ADDR_WIDTH ));
 		wen <= '1';
 		wait until rising_edge(clk);
 		wen <= '0';
@@ -198,13 +198,13 @@ begin
 		
 		wait until rising_edge(clk);
 		wait until rising_edge(clk);
-		raddr_out <= std_logic_vector(to_unsigned( 0, ADDR_WIDTH ));
+		raddr_out <= std_logic_vector(to_unsigned( 32766, ADDR_WIDTH ));
 		wait until rising_edge(clk);
 		wait until rising_edge(clk);
 
 		wait until rising_edge(clk);
 		wait until rising_edge(clk);
-		raddr_out <= std_logic_vector(to_unsigned( 3, ADDR_WIDTH ));
+		raddr_out <= std_logic_vector(to_unsigned( 32767, ADDR_WIDTH ));
 		wait until rising_edge(clk);
 		wait until rising_edge(clk);		
 		

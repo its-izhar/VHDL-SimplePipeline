@@ -1,5 +1,9 @@
--- Greg Stitt
+-- Original Author: Greg Stitt
+-- 
+-- Author : Izhar Shaikh
 -- University of Florida
+
+-- Modifying the original source to have a generic structure.
 
 library ieee;
 use ieee.std_logic_1164.all;
