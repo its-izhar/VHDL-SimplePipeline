@@ -18,10 +18,11 @@ architecture default of ram_addr_tb is
 	constant ADDR_WIDTH	: positive := 15;
 	constant TEST_SIZE	: positive := 2**ADDR_WIDTH;
     
-	signal clk, wen, rst, mode, valid_out, start, read_done, pipeline_valid_out     : std_logic := '0';
+	signal clk, wen, wen_out, rst, mode, valid_out, start, read_done, write_done, pipeline_valid_out     : std_logic := '0';
 
-	signal waddr, raddr : std_logic_vector(ADDR_WIDTH-1 downto 0) := (others => '0');
+	signal waddr, raddr, waddr_out, raddr_out : std_logic_vector(ADDR_WIDTH-1 downto 0) := (others => '0');
 	signal wdata, rdata : std_logic_vector(C_MEM_IN_WIDTH-1 downto 0) := (others => '0');
+	signal wdata_out, rdata_out : std_logic_vector(C_MEM_OUT_WIDTH-1 downto 0) := (others => '0');
 	
 	signal pipeline_data_out : std_logic_vector(C_MEM_OUT_WIDTH-1 downto 0) := (others => '0');
 	
@@ -75,6 +76,39 @@ begin
             valid_out(0) => pipeline_valid_out,
             pipe_data_in    => rdata,
             pipe_data_out   => pipeline_data_out);			
+
+	UUT_OUT: entity work.ram
+		generic map (
+			num_words  => 2**ADDR_WIDTH,
+			word_width => C_MEM_OUT_WIDTH,
+			addr_width => ADDR_WIDTH
+			)
+		port map (
+			clk   => clk,
+			-- wr
+			wen   => wen_out,
+			waddr => waddr_out,
+			wdata => pipeline_data_out,
+			-- rd
+			raddr => raddr_out,
+			rdata => rdata_out
+			);			
+
+	UUT_AG_WRITE : entity work.addr_generator(default)
+		port map (
+			clk	=> clk,
+			rst => rst,
+			
+			mode => '1',
+			size => size,
+			wr_en => wen_out,
+			wr_addr => waddr_out,
+			valid_in => pipeline_valid_out,
+       
+			-- Control I/O
+			start => start,
+			done => write_done );			
+
 			
 	clk <= not clk and clkEn after 10 ns;
 
@@ -86,6 +120,7 @@ begin
 		wen <= '0';
 		wdata <= (others => '0');
 		waddr <= (others => '0');
+		
 		-- Set Size
 		size <= std_logic_vector(to_unsigned( TEST_SIZE, ADDR_WIDTH+1 ));
   
@@ -127,16 +162,26 @@ begin
 		end loop;
 		
 		-- wait until done
-		wait until (read_done = '1');
+		wait until (read_done = '1' and write_done = '1');
 
-        if (read_done /= '1') then
+        if (read_done /= '1' or write_done /= '1') then
             report "Done signal not asserted before timeout.";
 		else
 			report "Success!";
         end if;
 		
 		wait until rising_edge(clk);
+		wait until rising_edge(clk);
+		raddr_out <= std_logic_vector(to_unsigned( 0, ADDR_WIDTH ));
+		wait until rising_edge(clk);
+		wait until rising_edge(clk);
 
+		wait until rising_edge(clk);
+		wait until rising_edge(clk);
+		raddr_out <= std_logic_vector(to_unsigned( 1, ADDR_WIDTH ));
+		wait until rising_edge(clk);
+		wait until rising_edge(clk);		
+		
 		for i in 0 to 2 loop
 			wait until rising_edge(clk);
 		end loop;
