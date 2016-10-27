@@ -29,6 +29,7 @@ architecture default of ram_addr_tb is
 	signal size : std_logic_vector(ADDR_WIDTH downto 0) := (others => '0');
 	
 	signal mux1_out : std_logic_vector(C_MEM_IN_WIDTH downto 0) := (others => '0');
+	signal mux2_out : std_logic_vector(C_MEM_OUT_WIDTH downto 0) := (others => '0');
 	
 	signal clkEn, ip_add_gen_sel_mux_in : std_logic := '1';
     
@@ -90,6 +91,17 @@ begin
             valid_out(0) => pipeline_valid_out,
             pipe_data_in    => mux1_out(C_MEM_IN_WIDTH-1 downto 0),
             pipe_data_out   => pipeline_data_out);			
+
+	UUT_MUX_OUT : entity work.mux_2x1(WITH_SELECT)
+		generic map( DATA_WIDTH => C_MEM_OUT_WIDTH )
+		port map (
+			in1 => (others => '0'),
+			in2(C_MEM_OUT_WIDTH-1 downto 0) => pipeline_data_out(C_MEM_OUT_WIDTH-1 downto 0),
+			in2(C_MEM_OUT_WIDTH) => pipeline_valid_out,
+			sel => wen_out,
+			output(C_MEM_OUT_WIDTH-1 downto 0) => mux2_out(C_MEM_OUT_WIDTH-1 downto 0),
+			output(C_MEM_OUT_WIDTH) => mux2_out(C_MEM_OUT_WIDTH)
+		);
 			
 	UUT_OUT: entity work.ram
 		generic map (
@@ -102,7 +114,7 @@ begin
 			-- wr
 			wen   => wen_out,
 			waddr => waddr_out,
-			wdata => pipeline_data_out,
+			wdata => mux2_out(C_MEM_OUT_WIDTH-1 downto 0),
 			-- rd
 			raddr => raddr_out,
 			rdata => rdata_out
@@ -149,14 +161,14 @@ begin
 		
 		-- write data
 		wdata <= std_logic_vector(to_unsigned( 786, C_MEM_IN_WIDTH ));
-		waddr <= std_logic_vector(to_unsigned( 1, ADDR_WIDTH ));
+		waddr <= std_logic_vector(to_unsigned( 0, ADDR_WIDTH ));
 		wen <= '1';
 		wait until rising_edge(clk);
 		wen <= '0';
 
 		wait until rising_edge(clk);
 		wdata <= std_logic_vector(to_unsigned( 5238, C_MEM_IN_WIDTH ));
-		waddr <= std_logic_vector(to_unsigned( 2, ADDR_WIDTH ));
+		waddr <= std_logic_vector(to_unsigned( 3, ADDR_WIDTH ));
 		wen <= '1';
 		wait until rising_edge(clk);
 		wen <= '0';
@@ -192,7 +204,7 @@ begin
 
 		wait until rising_edge(clk);
 		wait until rising_edge(clk);
-		raddr_out <= std_logic_vector(to_unsigned( 1, ADDR_WIDTH ));
+		raddr_out <= std_logic_vector(to_unsigned( 3, ADDR_WIDTH ));
 		wait until rising_edge(clk);
 		wait until rising_edge(clk);		
 		

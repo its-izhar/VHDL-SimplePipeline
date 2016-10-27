@@ -82,9 +82,9 @@ begin
                 wr_en <= '0';
                 wr_addr <= (others => '0');
                 rd_addr <= (others => '0');
-                valid_out <= '0';
+                --valid_out <= '0';
                 done <= '0';
-                regDelay <= '0';
+                valid_out <= '0';
 				pipeIn_mux_sel <= '0';
                 state <= S_MODE_CHECK;  -- Go to check the mode
                 
@@ -96,17 +96,17 @@ begin
                 end if;
                 
             when S_RD_COUNT_CHECK =>     -- READ Mode Starts here ...
-				regDelay <= '0';
+				valid_out <= '0';
                 if(count < unsigned(regSize)) then
                     rd_addr <= std_logic_vector(count(ADDR_WIDTH-1 downto 0));
 					pipeIn_mux_sel <= '1';
-                    regDelay <= '1';
-                    valid_out <= regDelay;
+                    valid_out <= '1';
+                    --valid_out <= valid_out;
                     count := count + 1;
                     state <= S_RD_COUNT_CHECK;
                 else
-                    valid_out <= regDelay;
-					regDelay <= '0';
+                    --valid_out <= valid_out;
+					valid_out <= '0';
                     state <= S_DONE;
                 end if;      
             
@@ -126,8 +126,8 @@ begin
             when S_DONE =>
 				pipeIn_mux_sel <= '0';
 				wr_en <= '0';
-				regDelay <= '0';
 				valid_out <= '0';
+				--valid_out <= '0';
                 done <= '1';
                 if (start = '0') then
                     state <= S_WAIT_GO;
