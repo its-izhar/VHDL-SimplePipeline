@@ -21,14 +21,16 @@ architecture default of ram_addr_tb is
 	signal clk, wen, wen_out, rst, mode, valid_out, start, read_done, write_done, pipeline_valid_out     : std_logic := '0';
 
 	signal waddr, raddr, waddr_out, raddr_out : std_logic_vector(ADDR_WIDTH-1 downto 0) := (others => '0');
-	signal wdata, rdata : std_logic_vector(C_MEM_IN_WIDTH-1 downto 0) := (others => '0');
+	signal wdata, rdata  : std_logic_vector(C_MEM_IN_WIDTH-1 downto 0) := (others => '0');
 	signal wdata_out, rdata_out : std_logic_vector(C_MEM_OUT_WIDTH-1 downto 0) := (others => '0');
 	
 	signal pipeline_data_out : std_logic_vector(C_MEM_OUT_WIDTH-1 downto 0) := (others => '0');
 	
 	signal size : std_logic_vector(ADDR_WIDTH downto 0) := (others => '0');
 	
-	signal clkEn : std_logic := '1';
+	signal mux1_out : std_logic_vector(C_MEM_IN_WIDTH downto 0) := (others => '0');
+	
+	signal clkEn, ip_add_gen_sel_mux_in : std_logic := '1';
     
 begin
 
@@ -42,6 +44,7 @@ begin
 			rd_addr => raddr,
 			valid_in => '0',
 			valid_out => valid_out,
+			pipeIn_mux_sel => ip_add_gen_sel_mux_in,
        
 			-- Control I/O
 			start => start,
@@ -63,6 +66,17 @@ begin
 			raddr => raddr,
 			rdata => rdata
 			);
+			
+	UUT_MUX_IN : entity work.mux_2x1(WITH_SELECT)
+		generic map( DATA_WIDTH => C_MEM_IN_WIDTH )
+		port map (
+			in1 => (others => '0'),
+			in2(C_MEM_IN_WIDTH-1 downto 0) => rdata(C_MEM_IN_WIDTH-1 downto 0),
+			in2(C_MEM_IN_WIDTH) => valid_out,
+			sel => ip_add_gen_sel_mux_in,
+			output(C_MEM_IN_WIDTH-1 downto 0) => mux1_out(C_MEM_IN_WIDTH-1 downto 0),
+			output(C_MEM_IN_WIDTH) => mux1_out(C_MEM_IN_WIDTH)
+		);
 
     U_PIPELINE : entity work.datapath(default)
         generic map (
@@ -72,11 +86,11 @@ begin
             pipe_clk   => clk,
             pipe_rst   => rst,
             pipe_en    => '1',
-            valid_in(0)   => valid_out,
+            valid_in(0)   => mux1_out(C_MEM_IN_WIDTH),
             valid_out(0) => pipeline_valid_out,
-            pipe_data_in    => rdata,
+            pipe_data_in    => mux1_out(C_MEM_IN_WIDTH-1 downto 0),
             pipe_data_out   => pipeline_data_out);			
-
+			
 	UUT_OUT: entity work.ram
 		generic map (
 			num_words  => 2**ADDR_WIDTH,

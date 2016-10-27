@@ -28,7 +28,7 @@ entity addr_generator is
        done     : out std_logic;
               
        -- Write Control
-       wr_en      : out std_logic;
+       wr_en, pipeIn_mux_sel      : out std_logic;
        wr_addr    : out std_logic_vector(ADDR_WIDTH-1 downto 0);
        
        -- Read Control
@@ -66,6 +66,7 @@ begin
         wr_addr <= (others => '0');
         rd_addr <= (others => '0');
         valid_out <= '0';
+		pipeIn_mux_sel <= '0';
         
     elsif (rising_edge(clk)) then
 
@@ -84,6 +85,7 @@ begin
                 valid_out <= '0';
                 done <= '0';
                 regDelay <= '0';
+				pipeIn_mux_sel <= '0';
                 state <= S_MODE_CHECK;  -- Go to check the mode
                 
             when S_MODE_CHECK =>
@@ -97,6 +99,7 @@ begin
 				regDelay <= '0';
                 if(count < unsigned(regSize)) then
                     rd_addr <= std_logic_vector(count(ADDR_WIDTH-1 downto 0));
+					pipeIn_mux_sel <= '1';
                     regDelay <= '1';
                     valid_out <= regDelay;
                     count := count + 1;
@@ -121,6 +124,7 @@ begin
                 end if;                
                 
             when S_DONE =>
+				pipeIn_mux_sel <= '0';
 				wr_en <= '0';
 				regDelay <= '0';
 				valid_out <= '0';
