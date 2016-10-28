@@ -1,7 +1,7 @@
 -- Izhar Shaikh
 -- File: controller.vhd
 --
--- Description: Implements a Controller to control, which will in-turn control address generator, Block RAMs and pipeline. 
+-- Description: Implements a FSM, which will in-turn control address generator, Block RAMs and pipeline. 
 
 library ieee;
 use ieee.std_logic_1164.all;

@@ -1,3 +1,11 @@
+--
+-- Author : Izhar Shaikh
+--	Reusing the code from previous lab. 
+--	
+--	File : mult_pipe.vhd
+--		This implements a behavioral architecture of a multiplier followed by a register. 
+--
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

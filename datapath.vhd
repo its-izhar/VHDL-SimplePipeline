@@ -1,5 +1,15 @@
 -- Izhar Shaikh
 -- University of Florida
+--	
+--	File : datapath.vhd
+--	Description :
+--		Implements a structural architecture of a simple "pipeline" consisting of two 8-bit multipliers and one 16-bit adder.
+--		Since this is a pipeline, every entity is followed by a register.
+--		This datapath will get inputs from an input memory and will write to output memory (BlockRAMs).
+--		For reading and writing the data, address generators are used.
+--		To control all of the abovementioned operation, a FSM is implemented in controller.vhd to control the synchronised operation.
+--
+----------------------------------------------------------------------------------------------------------------------------------------	
 
 library ieee;
 use ieee.std_logic_1164.all;
